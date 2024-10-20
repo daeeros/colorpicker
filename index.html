@@ -15,14 +15,14 @@
             margin: 0;
             font-family: 'Arial', sans-serif;
         }
-        .pcr-button {
-            width: 100% !important;
-            height: 50px !important;
+        .pickr {
+            display: none;
         }
         .color-container {
             max-width: 600px;
             margin: auto;
             text-align: center;
+            position: relative;
         }
 
         h1 {
@@ -45,6 +45,10 @@
             padding: 0 20px;
             position: relative;
             overflow: hidden;
+        }
+
+        #colorPickerContainer {
+            display: none !important;
         }
 
         #colorCode {
@@ -97,9 +101,6 @@
 <body>
     <div class="container color-container">
         <h1>Color Picker</h1>
-
-        <div id="color-picker"></div>
-
         <div class="mt-4 p-3 rounded shadow-sm" id="selectedColorPanel" style="background-color: #4F46E5;">
             <div class="icon-container">
                 <i class="fas fa-palette paint-palette"></i>
@@ -107,6 +108,9 @@
             </div>
             <i class="fas fa-copy copy-icon" id="copyIcon" data-clipboard-target="#colorCode"></i>
         </div>
+
+        <!-- Контейнер для пикера -->
+        <div id="colorPickerContainer"></div>
 
         <div class="toast align-items-center text-white bg-success border-0" id="toast" role="alert" aria-live="assertive" aria-atomic="true">
             <div class="d-flex">
@@ -124,7 +128,7 @@
 
     <script>
         const pickr = Pickr.create({
-            el: '#color-picker',
+            el: '#colorPickerContainer', // Изменено для размещения пикера в контейнере
             theme: 'classic',
             swatches: [
                 'rgba(244, 67, 54, 1)',
@@ -142,6 +146,7 @@
                 'rgba(255, 235, 59, 0.95)',
                 'rgba(255, 193, 7, 1)'
             ],
+            showAlways: true,
             components: {
                 preview: true,
                 opacity: true,
