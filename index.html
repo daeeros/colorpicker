@@ -2,110 +2,186 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advanced Color Picker</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Color Picker</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/themes/monolith.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
     <style>
         body {
-            background-color: #f8f9fa;
-            padding: 20px;
+            background-color: #f0f4f8;
+            padding-top: 30px;
+            margin: 0;
             font-family: 'Arial', sans-serif;
         }
-        .color-picker-container {
-            margin-top: 50px;
+        .pcr-button {
+            width: 100% !important;
+            height: 50px !important;
+        }
+        .color-container {
+            max-width: 600px;
+            margin: auto;
             text-align: center;
         }
-        .color-preview {
-            width: 100%;
-            height: 100px;
-            border-radius: 10px;
-            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-            transition: background-color 0.3s ease-in-out;
+
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            color: #333;
         }
-        .copy-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-color: #007bff;
-            border: none;
-            border-radius: 50px;
-            padding: 10px 20px;
-            font-size: 18px;
-            color: white;
-            transition: background-color 0.3s;
-        }
-        .copy-btn:hover {
-            background-color: #0056b3;
-            cursor: pointer;
-        }
-        .bottom-panel {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            background-color: #343a40;
-            color: white;
-            padding: 15px;
+
+        #selectedColorPanel {
+            margin-top: 20px;
+            height: 90px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.2);
-        }
-        .bottom-panel span {
-            font-size: 18px;
+            border-radius: 12px;
+            font-size: 22px;
             font-weight: bold;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s ease-in-out;
+            padding: 0 20px;
+            position: relative;
+            overflow: hidden;
         }
+
+        #colorCode {
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 4px 10px;
+            border-radius: 6px;
+            color: white;
+            transition: color 0.3s ease-in-out;
+        }
+
+        .icon-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .paint-palette, .copy-icon {
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 8px;
+            border-radius: 50%;
+            font-size: 28px;
+            color: white;
+            transition: color 0.3s ease-in-out;
+        }
+
+        .toast {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            z-index: 1050;
+        }
+
         @media (max-width: 576px) {
-            .color-preview {
-                height: 80px;
+            h1 {
+                font-size: 1.5rem;
             }
-            .copy-btn {
-                font-size: 16px;
+
+            #selectedColorPanel {
+                height: 80px;
+                font-size: 18px;
+            }
+
+            .paint-palette, .copy-icon {
+                font-size: 24px;
+                padding: 6px;
             }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-md-6 col-sm-12 color-picker-container">
-                <h1 class="mb-4">Advanced Color Picker</h1>
+    <div class="container color-container">
+        <h1>Color Picker</h1>
 
-                <!-- Автоматически открытый выбор цвета -->
-                <input type="color" class="form-control form-control-color mb-3" id="colorPicker" value="#ff6347" title="Choose your color">
+        <div id="color-picker"></div>
 
-                <div class="color-preview" id="colorPreview" style="background-color: #ff6347;"></div>
+        <div class="mt-4 p-3 rounded shadow-sm" id="selectedColorPanel" style="background-color: #4F46E5;">
+            <div class="icon-container">
+                <i class="fas fa-palette paint-palette"></i>
+                <span id="colorCode">#4F46E5</span>
+            </div>
+            <i class="fas fa-copy copy-icon" id="copyIcon" data-clipboard-target="#colorCode"></i>
+        </div>
+
+        <div class="toast align-items-center text-white bg-success border-0" id="toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    Color copied to clipboard!
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
             </div>
         </div>
     </div>
 
-    <!-- Нижняя панель с информацией -->
-    <div class="bottom-panel" id="bottomPanel">
-        <span id="colorCode">#ff6347</span>
-        <button class="copy-btn" id="copyButton" data-clipboard-target="#colorCode">Copy Color</button>
-    </div>
+    <script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/pickr.es5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
-        const colorPicker = document.getElementById('colorPicker');
+        const pickr = Pickr.create({
+            el: '#color-picker',
+            theme: 'monolith',
+            swatches: [
+                'rgba(244, 67, 54, 1)',
+                'rgba(233, 30, 99, 0.95)',
+                'rgba(156, 39, 176, 0.9)',
+                'rgba(103, 58, 183, 0.85)',
+                'rgba(63, 81, 181, 0.8)',
+                'rgba(33, 150, 243, 0.75)',
+                'rgba(3, 169, 244, 0.7)',
+                'rgba(0, 188, 212, 0.7)',
+                'rgba(0, 150, 136, 0.75)',
+                'rgba(76, 175, 80, 0.8)',
+                'rgba(139, 195, 74, 0.85)',
+                'rgba(205, 220, 57, 0.9)',
+                'rgba(255, 235, 59, 0.95)',
+                'rgba(255, 193, 7, 1)'
+            ],
+            components: {
+                preview: true,
+                opacity: true,
+                hue: true,
+                interaction: {
+                    hex: true,
+                    input: true,
+                    clear: true,
+                    save: true
+                }
+            }
+        });
+
         const colorCode = document.getElementById('colorCode');
-        const colorPreview = document.getElementById('colorPreview');
-        const bottomPanel = document.getElementById('bottomPanel');
+        const selectedColorPanel = document.getElementById('selectedColorPanel');
+        const toast = new bootstrap.Toast(document.getElementById('toast'));
 
-        // Обновление при выборе нового цвета
-        colorPicker.addEventListener('input', (event) => {
-            const color = event.target.value;
-            colorCode.textContent = color;
-            colorPreview.style.backgroundColor = color;
-            bottomPanel.style.backgroundColor = color;
+        pickr.on('change', (color) => {
+            const hexColor = color.toHEXA().toString();
+            colorCode.textContent = hexColor;
+            selectedColorPanel.style.backgroundColor = hexColor;
+
+            if (hexColor.toLowerCase() === '#ffffff') {
+                colorCode.style.color = '#000';
+                document.querySelectorAll('.paint-palette, .copy-icon').forEach(icon => {
+                    icon.style.color = '#000';
+                });
+            } else {
+                colorCode.style.color = 'white';
+                document.querySelectorAll('.paint-palette, .copy-icon').forEach(icon => {
+                    icon.style.color = 'white';
+                });
+            }
         });
 
-        // Настройка быстрого копирования
-        new ClipboardJS('#copyButton').on('success', () => {
-            alert('Color copied to clipboard!');
+        new ClipboardJS('#copyIcon').on('success', () => {
+            toast.show();
         });
+
+        pickr.show();
     </script>
 </body>
 </html>
